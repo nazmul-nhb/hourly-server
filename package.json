@@ -1,6 +1,6 @@
 {
 	"name": "hourly-server",
-	"version": "1.0.4",
+	"version": "1.0.5",
 	"description": "Server for Hourly",
 	"main": "dist/server.js",
 	"scripts": {

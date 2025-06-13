@@ -53,9 +53,6 @@ jobs:
               if: env.VERSION_UNCHANGED == 'false'
               run: npm install -g pnpm
 
-            - name: Ensure PNPM store dir exists
-              run: mkdir -p ~/.pnpm-store
-
             - name: Setup Node.js
               if: env.VERSION_UNCHANGED == 'false'
               uses: actions/setup-node@v4
@@ -67,7 +64,7 @@ jobs:
             # Install Dependencies
             - name: Install Dependencies
               if: env.VERSION_UNCHANGED == 'false'
-              run: pnpm install --frozen-lockfile --store-dir ~/.pnpm-store
+              run: pnpm install --frozen-lockfile
 
             # Deploy to Vercel only if version is different
             - name: Deploy to Vercel
