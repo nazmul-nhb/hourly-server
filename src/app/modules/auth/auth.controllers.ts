@@ -14,9 +14,9 @@ const registerUser = catchAsync(async (req, res) => {
 const loginUser = catchAsync(async (req, res) => {
 	const result = await authServices.loginUser(req.body);
 
-	const { refreshToken, accessToken, user } = result;
+	const { refresh_token, access_token, user } = result;
 
-	res.cookie('refreshToken', refreshToken, {
+	res.cookie('refresh_token', refresh_token, {
 		secure: configs.NODE_ENV === 'production',
 		httpOnly: true,
 	});
@@ -25,16 +25,16 @@ const loginUser = catchAsync(async (req, res) => {
 		res,
 		'User',
 		'OK',
-		{ user, token: accessToken },
+		{ user, token: access_token },
 		'Login successful!',
 	);
 });
 
 /** * Generate new access token. */
 const refreshToken = catchAsync(async (req, res) => {
-	const { refreshToken } = req.cookies;
+	const { refresh_token } = req.cookies;
 
-	const token = await authServices.refreshToken(refreshToken);
+	const token = await authServices.refreshToken(refresh_token);
 
 	sendResponse(
 		res,

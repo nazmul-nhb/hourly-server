@@ -9,8 +9,8 @@ import {
 } from '../../utilities/authUtilities';
 import { User } from '../user/user.model';
 import type {
-	ICurrentUser,
 	ILoginCredentials,
+	IPlainUser,
 	ITokens,
 	IUser,
 } from '../user/user.types';
@@ -23,9 +23,9 @@ import type {
 const registerUserInDB = async (payload: IUser) => {
 	const newUser = await User.create(payload);
 
-	const { _id, userName, email } = newUser.toObject();
+	const { _id, user_name, email } = newUser.toObject();
 
-	const user = { _id, userName, email };
+	const user = { _id, user_name, email };
 
 	return user;
 };
@@ -72,9 +72,13 @@ const loginUser = async (payload: ILoginCredentials): Promise<ITokens> => {
 		configs.refreshExpireTime,
 	);
 
-	const { password: _, ...userInfo } = user.toObject();
+	const { password: _, __v, ...userInfo } = user.toObject<IPlainUser>();
 
-	return { accessToken, refreshToken, user: userInfo as ICurrentUser };
+	return {
+		access_token: accessToken,
+		refresh_token: refreshToken,
+		user: userInfo,
+	};
 };
 
 /**
@@ -108,9 +112,9 @@ const refreshToken = async (token: string): Promise<{ token: string }> => {
 const getCurrentUserFromDB = async (client?: DecodedUser) => {
 	const user = await User.validateUser(client?.email);
 
-	const { password: _, ...userInfo } = user.toObject();
+	const { password: _, __v, ...userInfo } = user.toObject<IPlainUser>();
 
-	return userInfo as ICurrentUser;
+	return userInfo;
 };
 
 export const authServices = {

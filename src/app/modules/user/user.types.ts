@@ -1,12 +1,10 @@
 import type { Document, Model, Types } from 'mongoose';
 import type { TEmail, TUserRole } from '../../types';
 
-export interface IUser {
-	email: TEmail;
-	password: string;
+export interface IUser extends ILoginCredentials {
 	role: TUserRole;
-	userName: string;
-	isActive: boolean;
+	user_name: string;
+	is_active: boolean;
 }
 
 export interface ILoginCredentials {
@@ -15,9 +13,15 @@ export interface ILoginCredentials {
 }
 
 export interface ITokens {
-	accessToken: string;
-	refreshToken: string;
+	access_token: string;
+	refresh_token: string;
 	user: ICurrentUser;
+}
+
+export interface IPlainUser extends IUser {
+	_id: Types.ObjectId;
+	created_at: string;
+	updated_at: string;
 }
 
 export interface IUserDoc extends IUser, Document {
@@ -30,6 +34,6 @@ export interface IUserModel extends Model<IUserDoc> {
 
 export interface ICurrentUser extends Omit<IUser, 'password'> {
 	_id: Types.ObjectId;
-	createdAt: string;
-	updatedAt: string;
+	created_at: string;
+	updated_at: string;
 }

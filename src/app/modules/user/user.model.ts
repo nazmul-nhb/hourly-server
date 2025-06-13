@@ -7,7 +7,7 @@ import type { IUserDoc, IUserModel } from './user.types';
 
 const userSchema = new Schema<IUserDoc>(
 	{
-		userName: {
+		user_name: {
 			type: String,
 			// required: true,
 			trim: true,
@@ -30,18 +30,21 @@ const userSchema = new Schema<IUserDoc>(
 			enum: Object.values(USER_ROLES),
 			default: USER_ROLES.USER,
 		},
-		isActive: {
+		is_active: {
 			type: Boolean,
 			default: true,
 		},
 	},
 	{
-		timestamps: true,
+		timestamps: {
+			createdAt: 'created_at',
+			updatedAt: 'updated_at',
+		},
 		versionKey: false,
 	},
 );
 
-// * Hash password before saving the user in DB.
+// * Hash password and create username before saving the user in DB.
 userSchema.pre('save', async function (next) {
 	if (!this.isModified('email')) return next();
 
@@ -49,12 +52,12 @@ userSchema.pre('save', async function (next) {
 	let userName = base;
 	let suffix = 0;
 
-	while (await User.exists({ userName })) {
+	while (await User.exists({ user_name: userName })) {
 		suffix += 1;
 		userName = `${base}${suffix}`;
 	}
 
-	this.userName = userName;
+	this.user_name = userName;
 	this.password = await hashPassword(this.password);
 
 	next();
@@ -82,7 +85,7 @@ userSchema.statics.validateUser = async function (email?: TEmail) {
 		);
 	}
 
-	if (!user.isActive) {
+	if (!user.is_active) {
 		throw new ErrorWithStatus(
 			'Authentication Error',
 			`User with email ${email} is not active!`,
