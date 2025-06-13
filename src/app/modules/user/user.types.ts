@@ -4,9 +4,9 @@ import type { TEmail, TUserRole } from '../../types';
 export interface IUser {
 	email: TEmail;
 	password: string;
-	userName: string;
 	role: TUserRole;
-	isActive?: boolean;
+	userName: string;
+	isActive: boolean;
 }
 
 export interface ILoginCredentials {

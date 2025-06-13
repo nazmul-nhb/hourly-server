@@ -32,7 +32,7 @@ const userSchema = new Schema<IUserDoc>(
 		},
 		isActive: {
 			type: Boolean,
-			default: false,
+			default: true,
 		},
 	},
 	{
