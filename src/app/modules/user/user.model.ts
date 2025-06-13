@@ -1,26 +1,21 @@
 import { Schema, model } from 'mongoose';
 import { ErrorWithStatus } from '../../classes/ErrorWithStatus';
 import { STATUS_CODES, USER_ROLES } from '../../constants';
+import type { TEmail } from '../../types';
 import { hashPassword } from '../../utilities/authUtilities';
 import type { IUserDoc, IUserModel } from './user.types';
-import type { TEmail } from '../../types';
 
 const userSchema = new Schema<IUserDoc>(
 	{
-		name: {
-			type: String,
-			required: true,
-			trim: true,
-		},
-		email: {
+		userName: {
 			type: String,
 			required: true,
 			trim: true,
 			unique: true,
 		},
-		image: {
+		email: {
 			type: String,
-			required: [true, 'Image is required!'],
+			required: true,
 			trim: true,
 			unique: true,
 		},
