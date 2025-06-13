@@ -9,7 +9,7 @@ const userSchema = new Schema<IUserDoc>(
 	{
 		userName: {
 			type: String,
-			required: true,
+			// required: true,
 			trim: true,
 			unique: true,
 		},
@@ -43,6 +43,18 @@ const userSchema = new Schema<IUserDoc>(
 
 // * Hash password before saving the user in DB.
 userSchema.pre('save', async function (next) {
+	if (!this.isModified('email')) return next();
+
+	const base = this.email.split('@')[0];
+	let userName = base;
+	let suffix = 0;
+
+	while (await User.exists({ userName })) {
+		suffix += 1;
+		userName = `${base}${suffix}`;
+	}
+
+	this.userName = userName;
 	this.password = await hashPassword(this.password);
 
 	next();

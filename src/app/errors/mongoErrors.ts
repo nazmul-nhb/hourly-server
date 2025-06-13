@@ -4,6 +4,29 @@ import type {
 	IErrorResponse,
 	IErrorSource,
 } from '../types/interfaces';
+import { capitalizeString } from 'nhb-toolbox';
+
+/**
+ * * Extracts the db & collection name from a MongoDB duplicate key error message.
+ * @param error - The MongoDB error object.
+ * @returns The `db` & `collection` names as string (or null if not found) in an object.
+ */
+export function extractCollectionName(error: IDuplicateError): {
+	db: string | null;
+	collection: string | null;
+} {
+	const errmsg = error?.errorResponse?.errmsg;
+
+	if (typeof errmsg === 'string') {
+		const match = errmsg.match(/collection:\s([^.]+)\.([^\s]+)/);
+		if (match) {
+			// match[1] = DB name, match[2] = collection name
+			return { db: match[1], collection: match[2] };
+		}
+	}
+
+	return { db: null, collection: null };
+}
 
 /** * Processes Mongoose Validation Errors and returns a structured response. */
 export const handleValidationError = (
@@ -43,19 +66,25 @@ export const handleCastError = (
 	};
 };
 
-/** * Processes MongoDB Duplicate Errors and returns a structured response. */
+/** * Processes Mongo Duplicate Errors and returns a structured response. */
 export const handleDuplicateError = (
 	error: IDuplicateError,
 	stack?: string,
 ) => {
 	const key = Object.keys(error.keyValue)[0];
+	const { collection } = extractCollectionName(error);
+	const docName =
+		collection ?
+			capitalizeString(collection).replace(/s(?=[^s]*$)/, '')
+		:	'Document';
+
 	return {
 		statusCode: 409,
-		name: 'Mongo Duplicate Error',
+		name: 'MongoDB Duplicate Error',
 		errorSource: [
 			{
 				path: key,
-				message: `Document exists with ${key}: ${error.keyValue[key]}`,
+				message: `${docName} exists with ${key}: ${error.keyValue[key]}`,
 			},
 		],
 		stack,
