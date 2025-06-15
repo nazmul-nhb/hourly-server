@@ -3,6 +3,18 @@ import { z } from 'zod';
 /** Validation Schema for Creating new User */
 const creationSchema = z
 	.object({
+		first_name: z
+			.string({
+				required_error: 'First name is required!',
+				message: 'First name is required!',
+			})
+			.trim(),
+		last_name: z
+			.string({
+				required_error: 'Last name is required!',
+				message: 'Last name is required!',
+			})
+			.trim(),
 		email: z
 			.string()
 			.email({ message: 'Please provide a valid email address!' }),

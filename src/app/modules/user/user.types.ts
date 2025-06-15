@@ -2,6 +2,8 @@ import type { Document, Model, Types } from 'mongoose';
 import type { TEmail, TUserRole } from '../../types';
 
 export interface IUser extends ILoginCredentials {
+	first_name: string;
+	last_name: string;
 	role: TUserRole;
 	user_name: string;
 	is_active: boolean;
