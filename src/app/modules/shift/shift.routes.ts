@@ -1,8 +1,7 @@
 import { Router } from 'express';
-import { USER_ROLES } from '../../constants';
 import authorizeUser from '../../middlewares/authorizeUser';
-import { shiftControllers } from './shift.controllers';
 import validateRequest from '../../middlewares/validateRequest';
+import { shiftControllers } from './shift.controllers';
 import { shiftValidations } from './shift.validation';
 
 const router = Router();
@@ -16,7 +15,7 @@ router.post(
 
 router.get(
 	'/',
-	authorizeUser(...Object.values(USER_ROLES)),
+	authorizeUser('admin', 'super_admin'),
 	shiftControllers.getAllShifts,
 );
 

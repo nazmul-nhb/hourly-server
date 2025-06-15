@@ -8,7 +8,15 @@ const createNewShift = catchAsync(async (req, res) => {
 		req?.user?.email,
 	);
 
-	sendResponse(res, 'Shift', 'GET', shifts, 'Created new shift for the day!');
+	sendResponse(
+		res,
+		'Shift',
+		'GET',
+		shifts,
+		Array.isArray(shifts) ?
+			`${shifts?.length} shifts have been created for the selected dates in the range!`
+		:	'Created new shift for the day!',
+	);
 });
 
 const getAllShifts = catchAsync(async (_req, res) => {
