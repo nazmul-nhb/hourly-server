@@ -106,8 +106,11 @@ const getUserShiftsFromDB = async (
 		shiftQuery.modelQuery.getFilter(),
 	);
 
-	const [{ total_working_mins = 0, total_break_mins = 0 } = {}] =
-		await Shift.aggregate([
+	const [{ total_working_mins = 0, total_break_mins = 0 }] =
+		await Shift.aggregate<{
+			total_working_mins: number;
+			total_break_mins: number;
+		}>([
 			{ $match: shiftQuery.modelQuery.getFilter() },
 			{
 				$group: {
@@ -122,8 +125,8 @@ const getUserShiftsFromDB = async (
 
 	return {
 		total_shifts,
-		total_working_mins,
 		total_break_mins,
+		total_working_mins,
 		user_shifts,
 	};
 };
