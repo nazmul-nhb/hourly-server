@@ -24,6 +24,14 @@ const shiftSchema = new Schema<IShiftDoc>(
 			type: String,
 			required: false,
 		},
+		working_mins: {
+			type: Number,
+			required: false,
+		},
+		break_mins: {
+			type: Number,
+			required: false,
+		},
 		date: {
 			type: String,
 			required: true,

@@ -10,7 +10,7 @@ import type { ICreateBulkShift, ICreateShift } from './shift.types';
 
 const createShiftInDB = async (
 	payload: ICreateShift | ICreateBulkShift,
-	email?: TEmail,
+	email: TEmail | undefined,
 ) => {
 	const user = await User.validateUser(email);
 	payload.user = user._id;
@@ -18,6 +18,7 @@ const createShiftInDB = async (
 	payload.break = payload.break ?? '00:00';
 
 	const breakMins = extractTotalMinutesFromTime(payload.break);
+	payload.break_mins = breakMins;
 
 	const shiftMins =
 		extractTotalMinutesFromTime(payload.end_time) -
@@ -33,6 +34,7 @@ const createShiftInDB = async (
 	}
 
 	const workingMins = shiftMins - breakMins;
+	payload.working_mins = workingMins;
 
 	payload.working_hours =
 		`${String(Math.floor(workingMins / 60)).padStart(2, '0')}:${String(workingMins % 60).padStart(2, '0')}` as ClockTime;
@@ -70,9 +72,11 @@ const createShiftInDB = async (
 			...pickFields(payload, [
 				'user',
 				'break',
-				'working_hours',
+				'break_mins',
 				'start_time',
 				'end_time',
+				'working_hours',
+				'working_mins',
 			]),
 		})) as ICreateShift[];
 
@@ -80,10 +84,48 @@ const createShiftInDB = async (
 
 		return newShifts;
 	} else {
+		payload.date = chronos(payload.date).toISOString();
+
 		const newShift = await Shift.create(payload);
 
 		return newShift;
 	}
+};
+
+const getUserShiftsFromDB = async (
+	email: TEmail | undefined,
+	query?: Record<string, unknown>,
+) => {
+	const user = await User.validateUser(email);
+
+	const shiftQuery = new QueryBuilder(Shift.find({ user: user._id }), query)
+		.filter()
+		.sort();
+
+	const total_shifts = await Shift.countDocuments(
+		shiftQuery.modelQuery.getFilter(),
+	);
+
+	const [{ total_working_mins = 0, total_break_mins = 0 } = {}] =
+		await Shift.aggregate([
+			{ $match: shiftQuery.modelQuery.getFilter() },
+			{
+				$group: {
+					_id: null,
+					total_working_mins: { $sum: '$working_mins' },
+					total_break_mins: { $sum: '$break_mins' },
+				},
+			},
+		]);
+
+	const user_shifts = await shiftQuery.modelQuery;
+
+	return {
+		total_shifts,
+		total_working_mins,
+		total_break_mins,
+		user_shifts,
+	};
 };
 
 const getAllShiftsFromDB = async (query?: Record<string, unknown>) => {
@@ -95,4 +137,8 @@ const getAllShiftsFromDB = async (query?: Record<string, unknown>) => {
 	return shifts;
 };
 
-export const shiftServices = { createShiftInDB, getAllShiftsFromDB };
+export const shiftServices = {
+	createShiftInDB,
+	getUserShiftsFromDB,
+	getAllShiftsFromDB,
+};

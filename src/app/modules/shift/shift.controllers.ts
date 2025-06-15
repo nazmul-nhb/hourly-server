@@ -19,10 +19,19 @@ const createNewShift = catchAsync(async (req, res) => {
 	);
 });
 
+const getUserShifts = catchAsync(async (req, res) => {
+	const shifts = await shiftServices.getUserShiftsFromDB(
+		req?.user?.email,
+		req.query,
+	);
+
+	sendResponse(res, 'Shift', 'GET', shifts);
+});
+
 const getAllShifts = catchAsync(async (_req, res) => {
 	const shifts = await shiftServices.getAllShiftsFromDB();
 
 	sendResponse(res, 'Shift', 'GET', shifts);
 });
 
-export const shiftControllers = { createNewShift, getAllShifts };
+export const shiftControllers = { createNewShift, getUserShifts, getAllShifts };

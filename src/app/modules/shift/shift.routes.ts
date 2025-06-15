@@ -13,6 +13,8 @@ router.post(
 	shiftControllers.createNewShift,
 );
 
+router.get('/user', authorizeUser('user'), shiftControllers.getUserShifts);
+
 router.get(
 	'/',
 	authorizeUser('admin', 'super_admin'),

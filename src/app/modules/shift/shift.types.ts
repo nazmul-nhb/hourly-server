@@ -11,6 +11,8 @@ export interface ICreateShift {
 	working_hours: ClockTime;
 	date: string;
 	break?: `0${Enumerate<4>}:${ClockMinute}` | '04:00';
+	working_mins: number;
+	break_mins: number;
 }
 
 export interface IShiftDoc extends ICreateShift, Document {
