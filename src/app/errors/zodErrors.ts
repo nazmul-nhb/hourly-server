@@ -29,9 +29,9 @@ export const handleZodErrors = (
 			// case ZodIssueCode.too_big:
 			// 	message = `Value for “${path}” is too large. Maximum: ${zodIssue.maximum}!`;
 			// 	break;
-			case ZodIssueCode.invalid_string:
-				message = `Invalid string format for “${path}”. Expected ${zodIssue.validation}!`;
-				break;
+			// case ZodIssueCode.invalid_string:
+			// 	message = `Invalid string format for “${path}”. Expected ${zodIssue.validation}!`;
+			// 	break;
 		}
 
 		return { path, message };

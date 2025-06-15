@@ -55,7 +55,7 @@ const userSchema = new Schema<IUserDoc>(
 
 // * Hash password and create username before saving the user in DB.
 userSchema.pre('save', async function (next) {
-	const base = this.first_name?.toLowerCase()?.replace(/s/g, '_');
+	const base = this.first_name?.toLowerCase()?.replace(/\s+/g, '_');
 	let userName = base;
 	let suffix = 0;
 

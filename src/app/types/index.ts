@@ -2,7 +2,7 @@ import type { Types } from 'mongoose';
 import type { STATUS_CODES, USER_ROLES } from '../constants';
 import type { Branded } from 'nhb-toolbox/types';
 
-export type TCollection = 'N/A' | 'User';
+export type TCollection = 'N/A' | 'User' | 'Shift';
 
 export type TMethod =
 	| 'GET'
