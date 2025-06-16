@@ -1,5 +1,9 @@
-import { chronos, extractTotalMinutesFromTime, pickFields } from 'nhb-toolbox';
-import type { ClockTime } from 'nhb-toolbox/date/types';
+import {
+	chronos,
+	convertMinutesToTime,
+	getTotalMinutes,
+	pickFields,
+} from 'nhb-toolbox';
 import { ErrorWithStatus } from '../../classes/ErrorWithStatus';
 import { QueryBuilder } from '../../classes/QueryBuilder';
 import { STATUS_CODES } from '../../constants';
@@ -15,63 +19,41 @@ const createShiftInDB = async (
 	const user = await User.validateUser(email);
 	payload.user = user._id;
 
-	payload.break = payload.break ?? '00:00';
+	payload.break_hours = payload.break_hours ?? '00:00';
 
-	const breakMins = extractTotalMinutesFromTime(payload.break);
+	const breakMins = getTotalMinutes(payload.break_hours);
 	payload.break_mins = breakMins;
 
 	const shiftMins =
-		extractTotalMinutesFromTime(payload.end_time) -
-		extractTotalMinutesFromTime(payload.start_time);
+		getTotalMinutes(payload.end_time) - getTotalMinutes(payload.start_time);
 
 	if (breakMins >= shiftMins) {
 		throw new ErrorWithStatus(
 			'Invalid Break-time',
 			'Break-time cannot be greater than or equal to the total shift duration!',
 			STATUS_CODES.BAD_REQUEST,
-			'shift.break',
+			'shift.break_hours',
 		);
 	}
 
 	const workingMins = shiftMins - breakMins;
 	payload.working_mins = workingMins;
 
-	payload.working_hours =
-		`${String(Math.floor(workingMins / 60)).padStart(2, '0')}:${String(workingMins % 60).padStart(2, '0')}` as ClockTime;
+	payload.working_hours = convertMinutesToTime(workingMins);
 
 	if ('date_range' in payload && payload.date_range) {
-		const start = chronos(payload.date_range[0]);
-		const end = chronos(payload.date_range[1]);
-
-		const datesInRange: string[] = [];
-
-		let current = start;
-		while (current.isSameOrBefore(end, 'day')) {
-			datesInRange.push(current.toISOString());
-			current = current.add(1, 'day');
-		}
-
-		const weekends =
-			payload?.weekends?.flatMap((weekend) =>
-				chronos.getDatesForDay(weekend, {
-					format: 'utc',
-					from: start,
-					to: end,
-				}),
-			) || [];
-
-		const workingDates = datesInRange?.filter(
-			(date) =>
-				!weekends?.some((weekend) =>
-					chronos(date).isSame(weekend, 'day'),
-				),
-		);
+		const workingDates = chronos().getDatesInRange({
+			format: 'utc',
+			from: payload.date_range[0],
+			to: payload.date_range[1],
+			skipDays: payload?.weekends,
+		});
 
 		const shiftsInRange = workingDates?.map((date) => ({
 			date,
 			...pickFields(payload, [
 				'user',
-				'break',
+				'break_hours',
 				'break_mins',
 				'start_time',
 				'end_time',
@@ -106,7 +88,7 @@ const getUserShiftsFromDB = async (
 		shiftQuery.modelQuery.getFilter(),
 	);
 
-	const [{ total_working_mins = 0, total_break_mins = 0 }] =
+	const [{ total_working_mins = 0, total_break_mins = 0 } = {}] =
 		await Shift.aggregate<{
 			total_working_mins: number;
 			total_break_mins: number;
@@ -126,7 +108,9 @@ const getUserShiftsFromDB = async (
 	return {
 		total_shifts,
 		total_break_mins,
+		total_break_hours: convertMinutesToTime(total_break_mins),
 		total_working_mins,
+		total_working_hours: convertMinutesToTime(total_working_mins),
 		user_shifts,
 	};
 };

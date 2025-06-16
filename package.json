@@ -1,6 +1,6 @@
 {
 	"name": "hourly-server",
-	"version": "1.0.14",
+	"version": "1.0.15",
 	"description": "Server for Hourly",
 	"main": "dist/server.js",
 	"scripts": {
@@ -69,7 +69,7 @@
 		"jsonwebtoken": "^9.0.2",
 		"mongoose": "^8.15.2",
 		"multer": "^2.0.1",
-		"nhb-toolbox": "^4.12.36",
+		"nhb-toolbox": "^4.12.41",
 		"zod": "^3.25.63"
 	}
 }

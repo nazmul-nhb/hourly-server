@@ -1,5 +1,5 @@
+import { WEEK_DAYS } from 'nhb-toolbox/constants';
 import { z } from 'zod';
-import { WEEK_DAYS } from './shift.constants';
 
 const ClockTimeRegex = /^([01]\d|2[0-3]):[0-5]\d$/;
 
@@ -31,7 +31,7 @@ const creationSchema = z
 	.object({
 		start_time: ClockTime,
 		end_time: ClockTime,
-		break: BreakTime.optional(),
+		break_hours: BreakTime.optional(),
 		date: IsoZonedDate.optional(),
 		date_range: z.tuple([IsoZonedDate, IsoZonedDate]).optional(),
 		weekends: Weekends.optional(),

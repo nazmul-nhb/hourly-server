@@ -16,7 +16,7 @@ const shiftSchema = new Schema<IShiftDoc>(
 			type: String,
 			required: true,
 		},
-		break: {
+		break_hours: {
 			type: String,
 			required: false,
 		},
