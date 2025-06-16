@@ -1,5 +1,5 @@
 # Things to fix
 
-- Month name
-- Filter by month
-  \_ Shifts data only current month
+- Month name in the response
+- Shifts data only for current month
+- But can filter by month(s)
