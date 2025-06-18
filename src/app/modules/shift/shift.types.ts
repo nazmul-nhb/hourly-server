@@ -1,11 +1,5 @@
-import type { Model } from 'mongoose';
-import type { Document, Types } from 'mongoose';
-import type {
-	ClockMinute,
-	ClockTime,
-	HourMinutes,
-	WeekDay,
-} from 'nhb-toolbox/date/types';
+import type { Document, Model, Types } from 'mongoose';
+import type { ClockMinute, ClockTime, WeekDay } from 'nhb-toolbox/date/types';
 import type { Enumerate } from 'nhb-toolbox/number/types';
 import type { TupleOf } from 'nhb-toolbox/utils/types';
 
@@ -14,8 +8,8 @@ export interface ICreateShift {
 	start_time: ClockTime;
 	end_time: ClockTime;
 	date: string;
-	working_hours: HourMinutes;
-	break_hours?: `0${Enumerate<4>}:${ClockMinute}` | '04:00';
+	working_hours: ClockTime;
+	break_hours?: `0${Enumerate<7>}:${ClockMinute}` | '04:00';
 	working_mins: number;
 	break_mins: number;
 }
@@ -31,6 +25,6 @@ export interface IShiftModel extends Model<IShiftDoc> {
 }
 
 export interface ICreateBulkShift extends ICreateShift {
-	date_range?: TupleOf<string, 2>;
+	date_range: TupleOf<string, 2>;
 	weekends?: Array<WeekDay>;
 }

@@ -12,6 +12,7 @@ import { User } from '../user/user.model';
 import { Shift } from './shift.model';
 import type { ICreateBulkShift, ICreateShift } from './shift.types';
 import type { Enumerate } from 'nhb-toolbox/number/types';
+import type { ClockTime } from 'nhb-toolbox/date/types';
 
 const createShiftInDB = async (
 	payload: ICreateShift | ICreateBulkShift,
@@ -40,7 +41,7 @@ const createShiftInDB = async (
 	const workingMins = shiftMins - breakMins;
 	payload.working_mins = workingMins;
 
-	payload.working_hours = convertMinutesToTime(workingMins);
+	payload.working_hours = convertMinutesToTime(workingMins) as ClockTime;
 
 	if ('date_range' in payload && payload.date_range) {
 		const workingDates = chronos().getDatesInRange({
@@ -160,8 +161,35 @@ const getAllShiftsFromDB = async (query?: Record<string, unknown>) => {
 	return shifts;
 };
 
+const updateShiftInDB = async (
+	id: string,
+	payload: Partial<ICreateShift>,
+	email: TEmail | undefined,
+) => {
+	const existingShift = await Shift.findShiftById(id);
+
+	const user = await User.validateUser(email);
+
+	if (!existingShift.user.equals(user?._id)) {
+		throw new ErrorWithStatus(
+			'Authorization Error',
+			'You do not own this shift!',
+			STATUS_CODES.UNAUTHORIZED,
+			'auth',
+		);
+	}
+
+	const updatedShift = await Shift.findOneAndUpdate({ _id: id }, payload, {
+		runValidators: true,
+		new: true,
+	});
+
+	return updatedShift;
+};
+
 const deleteShiftFromDB = async (id: string, email: TEmail | undefined) => {
 	const existingShift = await Shift.findShiftById(id);
+
 	const user = await User.validateUser(email);
 
 	if (!existingShift.user.equals(user?._id)) {
@@ -189,5 +217,6 @@ export const shiftServices = {
 	createShiftInDB,
 	getUserShiftsFromDB,
 	getAllShiftsFromDB,
+	updateShiftInDB,
 	deleteShiftFromDB,
 };

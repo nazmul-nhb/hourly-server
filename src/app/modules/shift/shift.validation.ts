@@ -8,9 +8,9 @@ const ClockTime = z
 	.regex(ClockTimeRegex, { message: 'Invalid ClockTime format (HH:MM)' });
 
 const BreakTime = z.union([
-	z.literal('04:00'),
+	z.literal('08:00'),
 	z.string().regex(/^0[0-3]:[0-5]\d$/, {
-		message: 'Break-time cannot be more than 4 hours (04:00)',
+		message: 'Break-time cannot be more than 8 hours (08:00)',
 	}),
 ]);
 
@@ -38,4 +38,6 @@ const creationSchema = z
 	})
 	.strict();
 
-export const shiftValidations = { creationSchema };
+const updateSchema = creationSchema.partial().strict();
+
+export const shiftValidations = { creationSchema, updateSchema };

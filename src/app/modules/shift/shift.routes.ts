@@ -15,11 +15,14 @@ router.post(
 
 router.get('/user', authorizeUser('user'), shiftControllers.getUserShifts);
 
-router.delete(
-	'/user/:id',
+router.patch(
+	'/:id',
+	validateRequest(shiftValidations.updateSchema),
 	authorizeUser('user'),
-	shiftControllers.deleteUserShift,
+	shiftControllers.updateUserShift,
 );
+
+router.delete('/:id', authorizeUser('user'), shiftControllers.deleteUserShift);
 
 router.get(
 	'/',
