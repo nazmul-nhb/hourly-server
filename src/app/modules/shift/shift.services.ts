@@ -122,9 +122,6 @@ const getUserShiftsFromDB = async (
 		shiftQuery.modelQuery.getFilter(),
 	);
 
-	// const aggregationFilter = shiftQuery.modelQuery.getFilter();
-	// delete aggregationFilter.$options;
-
 	const [{ total_working_mins = 0, total_break_mins = 0 } = {}] =
 		await Shift.aggregate<{
 			total_working_mins: number;
@@ -143,7 +140,7 @@ const getUserShiftsFromDB = async (
 	const user_shifts = await shiftQuery.modelQuery;
 
 	return {
-		year,
+		year: query?.month ? year : chronos().year,
 		month: monthName,
 		total_shifts,
 		total_break_mins,
