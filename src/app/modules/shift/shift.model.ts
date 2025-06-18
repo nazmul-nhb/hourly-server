@@ -35,6 +35,7 @@ const shiftSchema = new Schema<IShiftDoc>(
 		date: {
 			type: String,
 			required: true,
+			unique: true,
 		},
 	},
 	{

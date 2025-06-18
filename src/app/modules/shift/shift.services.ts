@@ -11,6 +11,7 @@ import type { TEmail } from '../../types';
 import { User } from '../user/user.model';
 import { Shift } from './shift.model';
 import type { ICreateBulkShift, ICreateShift } from './shift.types';
+import type { Enumerate } from 'nhb-toolbox/number/types';
 
 const createShiftInDB = async (
 	payload: ICreateShift | ICreateBulkShift,
@@ -80,13 +81,49 @@ const getUserShiftsFromDB = async (
 ) => {
 	const user = await User.validateUser(email);
 
-	const shiftQuery = new QueryBuilder(Shift.find({ user: user._id }), query)
+	let selectedMonth = chronos().startOf('month');
+	let monthName = selectedMonth.monthName();
+
+	const year = query?.year ? Number(query?.year) : selectedMonth.year;
+	const monthIndex = Number(query?.month);
+
+	if (monthIndex) {
+		if (monthIndex >= 1 && monthIndex <= 12) {
+			selectedMonth = chronos(year, monthIndex);
+			monthName = selectedMonth.monthName(
+				(monthIndex - 1) as Enumerate<12>,
+			);
+		} else {
+			throw new ErrorWithStatus(
+				'Invalid Month',
+				`Month must be between 1-12, you provided: “${monthIndex}”`,
+				STATUS_CODES.BAD_REQUEST,
+				'query.month',
+			);
+		}
+	}
+
+	const start = selectedMonth.toISOString();
+	const end = selectedMonth.endOf('month').toISOString();
+
+	const filter = {
+		user: user._id,
+		date: { $gte: start, $lt: end },
+	};
+
+	const shiftQuery = new QueryBuilder(
+		Shift.find(filter),
+		query?.sort_by ? query : { ...query, sort_by: 'date' },
+	)
 		.filter()
 		.sort();
 
 	const total_shifts = await Shift.countDocuments(
 		shiftQuery.modelQuery.getFilter(),
 	);
+
+	// const aggregationFilter = shiftQuery.modelQuery.getFilter();
+	// delete aggregationFilter.$options;
 
 	const [{ total_working_mins = 0, total_break_mins = 0 } = {}] =
 		await Shift.aggregate<{
@@ -106,6 +143,8 @@ const getUserShiftsFromDB = async (
 	const user_shifts = await shiftQuery.modelQuery;
 
 	return {
+		year,
+		month: monthName,
 		total_shifts,
 		total_break_mins,
 		total_break_hours: convertMinutesToTime(total_break_mins),

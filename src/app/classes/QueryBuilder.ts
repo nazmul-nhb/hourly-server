@@ -50,11 +50,13 @@ export class QueryBuilder<T> {
 
 		const excludeFields = [
 			'search',
-			'sortBy',
-			'sortOrder',
+			'sort_by',
+			'sort_order',
 			'filter',
 			'page',
 			'limit',
+			'year',
+			'month',
 			'min',
 			'max',
 			'ids',
@@ -72,17 +74,17 @@ export class QueryBuilder<T> {
 	}
 
 	/**
-	 * Sorts the query based on `sortBy` and `sortOrder` parameters.
+	 * Sorts the query based on `sort_by` and `sort_order` parameters.
 	 * @returns The current instance of QueryBuilder.
 	 */
 	sort() {
-		const sortField = (this?.query?.sortBy as string) || 'createdAt';
-		const sortOrder = (this?.query?.sortOrder as string) || 'desc';
+		const sortField = (this?.query?.sort_by as string) || 'created_at';
+		const sort_order = (this?.query?.sort_order as string) || 'desc';
 
-		const sortBy: { [key: string]: 1 | -1 } = {};
-		sortBy[sortField] = sortOrder === 'asc' ? 1 : -1;
+		const sort_by: { [key: string]: 1 | -1 } = {};
+		sort_by[sortField] = sort_order === 'asc' ? 1 : -1;
 
-		this.modelQuery = this.modelQuery.sort(sortBy);
+		this.modelQuery = this.modelQuery.sort(sort_by);
 
 		return this;
 	}
