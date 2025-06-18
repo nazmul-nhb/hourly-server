@@ -1,3 +1,4 @@
+import type { Model } from 'mongoose';
 import type { Document, Types } from 'mongoose';
 import type {
 	ClockMinute,
@@ -23,6 +24,10 @@ export interface IShiftDoc extends Required<ICreateShift>, Document {
 	_id: Types.ObjectId;
 	created_at: string;
 	updated_at: string;
+}
+
+export interface IShiftModel extends Model<IShiftDoc> {
+	findShiftById: (id: string) => Promise<IShiftDoc>;
 }
 
 export interface ICreateBulkShift extends ICreateShift {

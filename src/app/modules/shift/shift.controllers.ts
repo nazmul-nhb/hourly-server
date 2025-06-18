@@ -28,10 +28,21 @@ const getUserShifts = catchAsync(async (req, res) => {
 	sendResponse(res, 'Shift', 'GET', shifts);
 });
 
+const deleteUserShift = catchAsync(async (req, res) => {
+	await shiftServices.deleteShiftFromDB(req?.params?.id, req.user?.email);
+
+	sendResponse(res, 'Shift', 'DELETE');
+});
+
 const getAllShifts = catchAsync(async (_req, res) => {
 	const shifts = await shiftServices.getAllShiftsFromDB();
 
 	sendResponse(res, 'Shift', 'GET', shifts);
 });
 
-export const shiftControllers = { createNewShift, getUserShifts, getAllShifts };
+export const shiftControllers = {
+	createNewShift,
+	getUserShifts,
+	deleteUserShift,
+	getAllShifts,
+};

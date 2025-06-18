@@ -15,6 +15,12 @@ router.post(
 
 router.get('/user', authorizeUser('user'), shiftControllers.getUserShifts);
 
+router.delete(
+	'/user/:id',
+	authorizeUser('user'),
+	shiftControllers.deleteUserShift,
+);
+
 router.get(
 	'/',
 	authorizeUser('admin', 'super_admin'),

@@ -154,15 +154,40 @@ const getUserShiftsFromDB = async (
 
 const getAllShiftsFromDB = async (query?: Record<string, unknown>) => {
 	const shiftQuery = new QueryBuilder(Shift.find(), query).sort();
-	// const shifts = await Shift.find({});
 
 	const shifts = await shiftQuery.modelQuery;
 
 	return shifts;
 };
 
+const deleteShiftFromDB = async (id: string, email: TEmail | undefined) => {
+	const existingShift = await Shift.findShiftById(id);
+	const user = await User.validateUser(email);
+
+	if (!existingShift.user.equals(user?._id)) {
+		throw new ErrorWithStatus(
+			'Authorization Error',
+			'You do not own this shift!',
+			STATUS_CODES.UNAUTHORIZED,
+			'auth',
+		);
+	}
+
+	const result = await Shift.deleteOne({ _id: id });
+
+	if (result.deletedCount < 1) {
+		throw new ErrorWithStatus(
+			'Not Found Error',
+			`No shift found with ID ${id}!`,
+			STATUS_CODES.NOT_FOUND,
+			'shift',
+		);
+	}
+};
+
 export const shiftServices = {
 	createShiftInDB,
 	getUserShiftsFromDB,
 	getAllShiftsFromDB,
+	deleteShiftFromDB,
 };
