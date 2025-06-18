@@ -85,11 +85,12 @@ const getUserShiftsFromDB = async (
 	let monthName = selectedMonth.monthName();
 
 	const year = query?.year ? Number(query?.year) : selectedMonth.year;
-	const monthIndex = Number(query?.month);
+	const monthIndex = query?.year && !query.month ? 1 : Number(query?.month);
 
 	if (monthIndex) {
 		if (monthIndex >= 1 && monthIndex <= 12) {
 			selectedMonth = chronos(year, monthIndex);
+
 			monthName = selectedMonth.monthName(
 				(monthIndex - 1) as Enumerate<12>,
 			);
@@ -140,7 +141,7 @@ const getUserShiftsFromDB = async (
 	const user_shifts = await shiftQuery.modelQuery;
 
 	return {
-		year: query?.month ? year : chronos().year,
+		year: year,
 		month: monthName,
 		total_shifts,
 		total_break_mins,
