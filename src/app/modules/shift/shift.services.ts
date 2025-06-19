@@ -1,9 +1,10 @@
 import {
 	chronos,
 	convertMinutesToTime,
-	getTotalMinutes,
 	pickFields,
+	sanitizeData,
 } from 'nhb-toolbox';
+import type { Enumerate } from 'nhb-toolbox/number/types';
 import { ErrorWithStatus } from '../../classes/ErrorWithStatus';
 import { QueryBuilder } from '../../classes/QueryBuilder';
 import { STATUS_CODES } from '../../constants';
@@ -11,49 +12,29 @@ import type { TEmail } from '../../types';
 import { User } from '../user/user.model';
 import { Shift } from './shift.model';
 import type { ICreateBulkShift, ICreateShift } from './shift.types';
-import type { Enumerate } from 'nhb-toolbox/number/types';
-import type { ClockTime } from 'nhb-toolbox/date/types';
+import { computeShiftDurations } from './shift.utils';
 
 const createShiftInDB = async (
 	payload: ICreateShift | ICreateBulkShift,
 	email: TEmail | undefined,
 ) => {
 	const user = await User.validateUser(email);
+
 	payload.user = user._id;
 
-	payload.break_hours = payload.break_hours ?? '00:00';
+	const computed = { ...payload, ...computeShiftDurations(payload) };
 
-	const breakMins = getTotalMinutes(payload.break_hours);
-	payload.break_mins = breakMins;
-
-	const shiftMins =
-		getTotalMinutes(payload.end_time) - getTotalMinutes(payload.start_time);
-
-	if (breakMins >= shiftMins) {
-		throw new ErrorWithStatus(
-			'Invalid Break-time',
-			'Break-time cannot be greater than or equal to the total shift duration!',
-			STATUS_CODES.BAD_REQUEST,
-			'shift.break_hours',
-		);
-	}
-
-	const workingMins = shiftMins - breakMins;
-	payload.working_mins = workingMins;
-
-	payload.working_hours = convertMinutesToTime(workingMins) as ClockTime;
-
-	if ('date_range' in payload && payload.date_range) {
+	if ('date_range' in computed && computed.date_range) {
 		const workingDates = chronos().getDatesInRange({
 			format: 'utc',
-			from: payload.date_range[0],
-			to: payload.date_range[1],
-			skipDays: payload?.weekends,
+			from: computed?.date_range?.[0],
+			to: computed?.date_range?.[1],
+			skipDays: computed?.weekends,
 		});
 
-		const shiftsInRange = workingDates?.map((date) => ({
-			date,
-			...pickFields(payload, [
+		const shiftsInRange: ICreateShift[] = workingDates?.map((date) => ({
+			date: chronos(date).startOf('day').toISOString(),
+			...pickFields(computed, [
 				'user',
 				'break_hours',
 				'break_mins',
@@ -62,15 +43,15 @@ const createShiftInDB = async (
 				'working_hours',
 				'working_mins',
 			]),
-		})) as ICreateShift[];
+		}));
 
 		const newShifts = await Shift.insertMany(shiftsInRange);
 
 		return newShifts;
 	} else {
-		payload.date = chronos(payload.date).toISOString();
+		computed.date = chronos(computed.date).toISOString();
 
-		const newShift = await Shift.create(payload);
+		const newShift = await Shift.create(computed);
 
 		return newShift;
 	}
@@ -179,7 +160,14 @@ const updateShiftInDB = async (
 		);
 	}
 
-	const updatedShift = await Shift.findOneAndUpdate({ _id: id }, payload, {
+	const computed = {
+		...payload,
+		...sanitizeData(computeShiftDurations(payload, existingShift), {
+			ignoreFalsy: true,
+		}),
+	};
+
+	const updatedShift = await Shift.findOneAndUpdate({ _id: id }, computed, {
 		runValidators: true,
 		new: true,
 	});
