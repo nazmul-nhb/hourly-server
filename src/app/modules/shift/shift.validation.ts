@@ -5,17 +5,22 @@ const ClockTimeRegex = /^([01]\d|2[0-3]):[0-5]\d$/;
 
 const ClockTime = z
 	.string()
+	.trim()
 	.regex(ClockTimeRegex, { message: 'Invalid ClockTime format (HH:MM)' });
 
 const BreakTime = z.union([
 	z.literal('08:00'),
-	z.string().regex(/^0[0-3]:[0-5]\d$/, {
-		message: 'Break-time cannot be more than 8 hours (08:00)',
-	}),
+	z
+		.string()
+		.trim()
+		.regex(/^0[0-7]:[0-5]\d$/, {
+			message: 'Break-time cannot be more than 8 hours (08:00)',
+		}),
 ]);
 
 const IsoZonedDate = z
 	.string()
+	.trim()
 	.regex(/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d{3}(Z|[+-]\d{2}:\d{2})$/, {
 		message: 'Invalid ISO date format with timezone!',
 	});
@@ -38,6 +43,9 @@ const creationSchema = z
 	})
 	.strict();
 
-const updateSchema = creationSchema.partial().strict();
+const updateSchema = creationSchema
+	.omit({ date_range: true, weekends: true })
+	.partial()
+	.strict();
 
 export const shiftValidations = { creationSchema, updateSchema };
