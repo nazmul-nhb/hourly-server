@@ -8,8 +8,8 @@ export const requestLogger: RequestHandler = (req, res, next): void => {
 	const now = chronos();
 	const time =
 		configs.NODE_ENV === 'development' ?
-			now.toLocalISOString()
-		:	now.toISOString();
+			now.format('mmm DD, YYYY HH:mm:ss:mss [Local]')
+		:	now.formatUTC('mmm DD, YYYY HH:mm:ss:mss [GMT]');
 
 	const method = req.method;
 	const url = req.originalUrl;
