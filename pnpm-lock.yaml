@@ -38,8 +38,8 @@ importers:
                 specifier: ^2.0.1
                 version: 2.0.1
             nhb-toolbox:
-                specifier: ^4.12.42
-                version: 4.12.42
+                specifier: ^4.12.43
+                version: 4.12.43
             zod:
                 specifier: ^3.25.63
                 version: 3.25.63
@@ -2782,10 +2782,10 @@ packages:
             }
         engines: { node: '>= 0.6' }
 
-    nhb-toolbox@4.12.42:
+    nhb-toolbox@4.12.43:
         resolution:
             {
-                integrity: sha512-K445L9OHYa6pgbx++bPuzMie8/AwHdiI88hDmhJg5eVZo4/7m64ykvjAUQmkBIAZZr4VOPDf/3+BJhzaVxDAzg==,
+                integrity: sha512-aJh2u9PN3lNEKQ3c/AN9gBrvPU6Yqv15bJI+Jh2IQKzb7cDEq2VF5IOTI3BLbPIH7WnH1OQpz45qBvC8gCbo+g==,
             }
 
     node-addon-api@8.3.1:
@@ -5592,7 +5592,7 @@ snapshots:
 
     negotiator@1.0.0: {}
 
-    nhb-toolbox@4.12.42: {}
+    nhb-toolbox@4.12.43: {}
 
     node-addon-api@8.3.1: {}
 

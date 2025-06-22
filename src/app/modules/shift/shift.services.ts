@@ -30,10 +30,11 @@ const createShiftInDB = async (
 			from: computed?.date_range?.[0],
 			to: computed?.date_range?.[1],
 			skipDays: computed?.weekends,
+			roundDate: true,
 		});
 
 		const shiftsInRange: ICreateShift[] = workingDates?.map((date) => ({
-			date: chronos(date).startOf('day').toISOString(),
+			date: date,
 			...pickFields(computed, [
 				'user',
 				'break_hours',
