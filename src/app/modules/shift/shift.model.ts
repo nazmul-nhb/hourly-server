@@ -37,7 +37,6 @@ const shiftSchema = new Schema<IShiftDoc>(
 		date: {
 			type: String,
 			required: true,
-			unique: true,
 		},
 	},
 	{
@@ -48,6 +47,21 @@ const shiftSchema = new Schema<IShiftDoc>(
 		versionKey: false,
 	},
 );
+
+shiftSchema.index({ user: 1, date: 1 }, { unique: true });
+
+// shiftSchema.pre('save', async function (next) {
+// 	if (await Shift.exists({ user: this.user, date: this.date })) {
+// 		throw new ErrorWithStatus(
+// 			'Conflict Error',
+// 			`Shift for user with id: ${this.user} for date ${this.date} already exists!`,
+// 			STATUS_CODES.CONFLICT,
+// 			'shift.date',
+// 		);
+// 	}
+
+// 	next();
+// });
 
 shiftSchema.statics.findShiftById = async function (id: string) {
 	if (!id) {

@@ -9,33 +9,53 @@ import type {
 interface DuplicateInfo {
 	db: string | null;
 	collection: string | null;
-	field: string | null;
-	value: string | null;
+	fields: Record<string, string>;
 }
 
 /**
- * * Extracts database, collection, and duplicate key info from MongoDB duplicate key error message.
+ * * Extracts database, collection, and duplicate key fields from MongoDB duplicate key error message.
  *
  * @param message - The MongoDB duplicate key error message.
- * @returns An object with db, collection, field, and value
+ * @returns An object with db, collection, and parsed duplicate fields
  */
 const extractMongoDuplicateInfo = (
 	message: string | undefined,
 ): DuplicateInfo => {
 	if (typeof message !== 'string') {
-		return { db: null, collection: null, field: null, value: null };
+		return { db: null, collection: null, fields: {} };
 	}
 
-	const collectionMatch = message.match(/collection:\s([^.]+)\.([^\s]+)/);
-	const dupKeyMatch = message.match(
-		/dup key:\s*\{\s*"?([^"'\s]+)"?\s*:\s*"(.+?)"\s*\}/,
-	);
+	const collectionMatch = message.match(/collection:\s*([^.]+)\.([^\s]+)/);
+	const dupKeyMatch = message.match(/dup key:\s*\{(.+)\}/);
+
+	const fields: Record<string, string> = {};
+
+	if (dupKeyMatch?.[1]) {
+		const pairs = dupKeyMatch[1].split(/,(?![^(]*\))/); // split on comma but ignore commas inside ObjectId(...)
+		for (const pair of pairs) {
+			const [rawKey, rawVal] = pair.split(/:\s*/);
+			if (!rawKey || !rawVal) continue;
+
+			const key = rawKey.replace(/^["'{\s]+|["'\s]+$/g, '');
+			let val = rawVal.trim();
+
+			const objectIdMatch = val.match(
+				/ObjectId\(["']?([a-f\d]{24})["']?\)/i,
+			);
+			if (objectIdMatch) {
+				val = objectIdMatch[1];
+			} else {
+				val = val.replace(/^["']|["']$/g, '');
+			}
+
+			fields[key] = val;
+		}
+	}
 
 	return {
 		db: collectionMatch?.[1] ?? null,
 		collection: collectionMatch?.[2] ?? null,
-		field: dupKeyMatch?.[1] ?? null,
-		value: dupKeyMatch?.[2] ?? null,
+		fields,
 	};
 };
 
@@ -84,9 +104,15 @@ export const handleDuplicateError = (
 ) => {
 	const key = error?.keyValue ? Object.keys(error.keyValue)[0] : undefined;
 
-	const { collection, field, value } = extractMongoDuplicateInfo(
+	const { collection, fields } = extractMongoDuplicateInfo(
 		error?.errorResponse?.errmsg ?? error?.errorResponse?.message,
 	);
+
+	// Prefer "date", fallback to first available key
+	const field =
+		fields.date ? 'date' : (Object.keys(fields)[0] ?? key ?? 'unknown');
+	const value = fields[field] ?? error?.keyValue?.[field] ?? 'duplicate';
+
 	const docName =
 		collection ?
 			capitalizeString(collection).replace(/s(?=[^s]*$)/, '')
@@ -97,8 +123,8 @@ export const handleDuplicateError = (
 		name: 'MongoDB Duplicate Error',
 		errorSource: [
 			{
-				path: key ?? field ?? 'unknown',
-				message: `${docName} exists with ${key ?? field ?? 'unknown'}: ${key ? error?.keyValue?.[key] : (value ?? 'duplicate')}`,
+				path: field,
+				message: `${docName} already exists with ${field}: ${value}`,
 			},
 		],
 		stack,
