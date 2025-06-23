@@ -31,24 +31,25 @@ const extractMongoDuplicateInfo = (
 	const fields: Record<string, string> = {};
 
 	if (dupKeyMatch?.[1]) {
-		const pairs = dupKeyMatch[1].split(/,(?![^(]*\))/); // split on comma but ignore commas inside ObjectId(...)
-		for (const pair of pairs) {
-			const [rawKey, rawVal] = pair.split(/:\s*/);
-			if (!rawKey || !rawVal) continue;
+		const pairRegex =
+			/["']?([^"':\s]+(?:\.[^"':\s]+)*)["']?\s*:\s*(ObjectId\(["']?[a-f\d]{24}["']?\)|"[^"]+"|'[^']+'|[^,}]+)/g;
 
-			const key = rawKey.replace(/^["'{\s]+|["'\s]+$/g, '');
-			let val = rawVal.trim();
+		let match: RegExpExecArray | null;
+		while ((match = pairRegex.exec(dupKeyMatch[1])) !== null) {
+			const key = match[1];
+			let value = match[2].trim();
 
-			const objectIdMatch = val.match(
+			// Parse ObjectId or strip quotes
+			const objectIdMatch = value.match(
 				/ObjectId\(["']?([a-f\d]{24})["']?\)/i,
 			);
 			if (objectIdMatch) {
-				val = objectIdMatch[1];
+				value = objectIdMatch[1];
 			} else {
-				val = val.replace(/^["']|["']$/g, '');
+				value = value.replace(/^['"]|['"]$/g, '');
 			}
 
-			fields[key] = val;
+			fields[key] = value;
 		}
 	}
 
