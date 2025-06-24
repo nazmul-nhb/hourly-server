@@ -1,3 +1,4 @@
+import { startSession } from 'mongoose';
 import {
 	chronos,
 	convertMinutesToTime,
@@ -12,7 +13,7 @@ import type { TEmail } from '../../types';
 import { User } from '../user/user.model';
 import { Shift } from './shift.model';
 import type { ICreateBulkShift, ICreateShift } from './shift.types';
-import { computeShiftDurations } from './shift.utils';
+import { computeShiftDurations, throwShiftError } from './shift.utils';
 
 const createShiftInDB = async (
 	payload: ICreateShift | ICreateBulkShift,
@@ -23,38 +24,70 @@ const createShiftInDB = async (
 	payload.user = user._id;
 
 	const computed = { ...payload, ...computeShiftDurations(payload) };
+	const isBulk =
+		'date_range' in computed && Array.isArray(computed.date_range);
 
-	if ('date_range' in computed && computed.date_range) {
-		const workingDates = chronos().getDatesInRange({
-			format: 'utc',
-			from: computed?.date_range?.[0],
-			to: computed?.date_range?.[1],
-			skipDays: computed?.weekends,
-			roundDate: true,
+	const dates =
+		isBulk ?
+			chronos().getDatesInRange({
+				from: computed.date_range?.[0],
+				to: computed.date_range?.[1],
+				skipDays: computed.weekends,
+				format: 'utc',
+			})
+		:	[computed.date];
+
+	const session = await startSession();
+
+	try {
+		const result = await session.withTransaction(async () => {
+			for (const date of dates) {
+				const incoming = date.slice(0, 10);
+
+				const others = await Shift.find(
+					{
+						user: computed.user,
+						date: { $regex: incoming, $options: 'i' },
+					},
+					null,
+					{ session },
+				);
+				throwShiftError(
+					others,
+					incoming,
+					computed.start_time,
+					computed.end_time,
+					'create_shift',
+				);
+			}
+
+			if (isBulk) {
+				const shifts: ICreateShift[] = dates.map((date) => ({
+					date,
+					...pickFields(computed, [
+						'user',
+						'break_hours',
+						'break_mins',
+						'start_time',
+						'end_time',
+						'working_hours',
+						'working_mins',
+					]),
+				}));
+
+				const newShifts = await Shift.insertMany(shifts, { session });
+
+				return newShifts;
+			} else {
+				const [newShift] = await Shift.create([computed], { session });
+
+				return newShift;
+			}
 		});
 
-		const shiftsInRange: ICreateShift[] = workingDates?.map((date) => ({
-			date: date,
-			...pickFields(computed, [
-				'user',
-				'break_hours',
-				'break_mins',
-				'start_time',
-				'end_time',
-				'working_hours',
-				'working_mins',
-			]),
-		}));
-
-		const newShifts = await Shift.insertMany(shiftsInRange);
-
-		return newShifts;
-	} else {
-		computed.date = chronos(computed.date).toISOString();
-
-		const newShift = await Shift.create(computed);
-
-		return newShift;
+		return result;
+	} finally {
+		session.endSession();
 	}
 };
 
@@ -167,6 +200,22 @@ const updateShiftInDB = async (
 			ignoreFalsy: true,
 		}),
 	};
+
+	const incoming = (computed?.date ?? existingShift?.date)?.slice(0, 10);
+
+	const others = await Shift.find({
+		user: user._id,
+		date: { $regex: incoming, $options: 'i' },
+		_id: { $ne: id },
+	});
+
+	throwShiftError(
+		others,
+		incoming,
+		computed.start_time ?? existingShift?.start_time,
+		computed.end_time ?? existingShift?.end_time,
+		'update_shift',
+	);
 
 	const updatedShift = await Shift.findOneAndUpdate({ _id: id }, computed, {
 		runValidators: true,

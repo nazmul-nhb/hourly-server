@@ -48,7 +48,7 @@ const shiftSchema = new Schema<IShiftDoc>(
 	},
 );
 
-shiftSchema.index({ user: 1, date: 1 }, { unique: true });
+// shiftSchema.index({ user: 1, date: 1 }, { unique: true });
 
 // shiftSchema.pre('save', async function (next) {
 // 	if (await Shift.exists({ user: this.user, date: this.date })) {
