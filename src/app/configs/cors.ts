@@ -6,6 +6,7 @@ export const corsOptions: CorsOptions = {
 			/^http:\/\/localhost:\d+$/,
 			/^http:\/\/192\.168\.224\.74:\d+$/,
 			/^http:\/\/192\.168\.0\.6:\d+$/,
+			'https://nexabyte-hourly.web.app/',
 		];
 
 		if (
