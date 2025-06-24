@@ -190,7 +190,7 @@ const updateShiftInDB = async (
 			'Authorization Error',
 			'You do not own this shift!',
 			STATUS_CODES.UNAUTHORIZED,
-			'auth',
+			'update_shift',
 		);
 	}
 
@@ -235,7 +235,7 @@ const deleteShiftFromDB = async (id: string, email: TEmail | undefined) => {
 			'Authorization Error',
 			'You do not own this shift!',
 			STATUS_CODES.UNAUTHORIZED,
-			'auth',
+			'delete_shift',
 		);
 	}
 
@@ -246,7 +246,7 @@ const deleteShiftFromDB = async (id: string, email: TEmail | undefined) => {
 			'Not Found Error',
 			`No shift found with ID ${id}!`,
 			STATUS_CODES.NOT_FOUND,
-			'shift',
+			'delete_shift',
 		);
 	}
 };
