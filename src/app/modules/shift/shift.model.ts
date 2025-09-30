@@ -1,6 +1,6 @@
 import { ErrorWithStatus } from '@/classes/ErrorWithStatus';
-import { Schema, model } from 'mongoose';
 import type { IShiftDoc, IShiftModel } from '@/modules/shift/shift.types';
+import { Schema, model } from 'mongoose';
 import { STATUS_CODES } from 'nhb-toolbox/constants';
 
 const shiftSchema = new Schema<IShiftDoc>(

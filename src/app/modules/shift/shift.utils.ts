@@ -1,8 +1,8 @@
 import { ErrorWithStatus } from '@/classes/ErrorWithStatus';
-import { chronos, convertMinutesToTime, getTotalMinutes, isValidArray } from 'nhb-toolbox';
-import type { ClockTime } from 'nhb-toolbox/date/types';
 import type { ICreateShift, IShiftDoc } from '@/modules/shift/shift.types';
+import { chronos, convertMinutesToTime, getTotalMinutes, isValidArray } from 'nhb-toolbox';
 import { STATUS_CODES } from 'nhb-toolbox/constants';
+import type { ClockTime } from 'nhb-toolbox/date/types';
 
 interface IComputedDurations {
 	break_hours: ICreateShift['break_hours'];

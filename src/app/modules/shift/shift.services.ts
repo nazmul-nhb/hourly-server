@@ -1,14 +1,14 @@
 import { ErrorWithStatus } from '@/classes/ErrorWithStatus';
 import { QueryBuilder } from '@/classes/QueryBuilder';
-import type { TEmail } from '@/types';
-import { startSession } from 'mongoose';
-import { chronos, convertMinutesToTime, pickFields, sanitizeData } from 'nhb-toolbox';
-import type { Enumerate } from 'nhb-toolbox/number/types';
-import { User } from '@/modules/user/user.model';
 import { Shift } from '@/modules/shift/shift.model';
 import type { ICreateBulkShift, ICreateShift } from '@/modules/shift/shift.types';
 import { computeShiftDurations, throwShiftError } from '@/modules/shift/shift.utils';
+import { User } from '@/modules/user/user.model';
+import type { TEmail } from '@/types';
+import { startSession } from 'mongoose';
+import { chronos, convertMinutesToTime, pickFields, sanitizeData } from 'nhb-toolbox';
 import { STATUS_CODES } from 'nhb-toolbox/constants';
+import type { Enumerate } from 'nhb-toolbox/number/types';
 
 const createShiftInDB = async (
 	payload: ICreateShift | ICreateBulkShift,

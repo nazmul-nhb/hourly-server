@@ -1,9 +1,9 @@
 import { ErrorWithStatus } from '@/classes/ErrorWithStatus';
 import { USER_ROLES } from '@/constants';
+import type { IUserDoc, IUserModel } from '@/modules/user/user.types';
 import type { TEmail } from '@/types';
 import { hashPassword } from '@/utilities/authUtilities';
 import { Schema, model } from 'mongoose';
-import type { IUserDoc, IUserModel } from '@/modules/user/user.types';
 import { STATUS_CODES } from 'nhb-toolbox/constants';
 
 const userSchema = new Schema<IUserDoc>(

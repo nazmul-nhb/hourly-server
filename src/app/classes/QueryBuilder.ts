@@ -1,5 +1,5 @@
-import { type FilterQuery, Model, type Query } from 'mongoose';
 import type { ExcludeField, NumericKeys, SearchField } from '@/types';
+import { type FilterQuery, Model, type Query } from 'mongoose';
 
 /**
  * @class QueryBuilder

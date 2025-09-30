@@ -1,9 +1,9 @@
 import { ErrorWithStatus } from '@/classes/ErrorWithStatus';
 import configs from '@/configs';
-import type { DecodedUser } from '@/types/interfaces';
-import { comparePassword, generateToken, verifyToken } from '@/utilities/authUtilities';
 import { User } from '@/modules/user/user.model';
 import type { ILoginCredentials, IPlainUser, ITokens, IUser } from '@/modules/user/user.types';
+import type { DecodedUser } from '@/types/interfaces';
+import { comparePassword, generateToken, verifyToken } from '@/utilities/authUtilities';
 import { STATUS_CODES } from 'nhb-toolbox/constants';
 
 /**

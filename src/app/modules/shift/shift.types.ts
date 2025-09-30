@@ -9,7 +9,7 @@ export interface ICreateShift {
 	end_time: ClockTime;
 	date: string;
 	working_hours: ClockTime;
-	break_hours?: `0${Enumerate<7>}:${ClockMinute}` | '04:00';
+	break_hours?: `0${Enumerate<7>}:${ClockMinute}` | '08:00';
 	working_mins: number;
 	break_mins: number;
 }
