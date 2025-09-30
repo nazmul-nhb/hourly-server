@@ -1,5 +1,5 @@
-import { QueryBuilder } from '../../classes/QueryBuilder';
-import { User } from './user.model';
+import { QueryBuilder } from '@/classes/QueryBuilder';
+import { User } from '@/modules/user/user.model';
 
 const getAllUsersFromDB = async (query?: Record<string, unknown>) => {
 	const userQuery = new QueryBuilder(User.find(), query).sort();

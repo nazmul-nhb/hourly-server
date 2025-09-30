@@ -1,8 +1,10 @@
-import chalk from 'chalk';
-import type { Server } from 'http';
+import configs from '@/configs';
+import { connectDB } from '@/configs/db';
+import type { ExceptionSignal } from '@/types';
+import { createServer, type Server } from 'http';
+import { convertStringCase } from 'nhb-toolbox';
+import { Stylog } from 'nhb-toolbox/stylog';
 import app from './app';
-import configs from './app/configs';
-import { connectDB } from './app/configs/db';
 
 let server: Server;
 
@@ -11,47 +13,45 @@ const bootStrap = async () => {
 		// Connect to DB
 		await connectDB();
 
+		server = createServer(app);
+
 		// Listen to the Server
-		server = app.listen(configs.port, () => {
+		server.listen(configs.port, () => {
 			console.info(
-				chalk.yellowBright(
-					`👂 Server is Listening on Port: ${configs.port}`,
-				),
+				Stylog.yellow.toANSI(`👂 Server is Listening on Port: ${configs.port}`)
 			);
 		});
+
+		handleException('SIGTERM');
+		handleException('SIGINT');
+		handleException('uncaughtException');
+		handleException('unhandledRejection');
 	} catch (error) {
 		if (error instanceof Error) {
-			console.error(chalk.red(`🚫 Error Occurred: ${error.message}`));
+			console.error(Stylog.error.toANSI(`🚫 Error Occurred: ${error.message}`));
 		} else {
-			console.error(chalk.red('🛑 Unknown Error Occurred!'));
+			console.error(Stylog.error.toANSI('🛑 Unknown Error Occurred!'));
 		}
 	}
 };
 
+function handleException(event: ExceptionSignal) {
+	process.on(event, () => {
+		const exception =
+			event?.startsWith('un') ? convertStringCase(event, 'Title Case') : event;
+
+		console.error(
+			Stylog.error.toANSI(`🚫 ${exception} Detected!\n🛑 Server is Shutting Down...`)
+		);
+
+		if (server) {
+			server.close(() => {
+				process.exit(0);
+			});
+		} else {
+			process.exit(0);
+		}
+	});
+}
+
 bootStrap().catch(console.dir);
-
-process.on('unhandledRejection', (err) => {
-	console.error(
-		chalk.redBright(
-			`🚫 Unhandled Rejection Detected!\n🛑 Server is Shutting Down... ${err}`,
-		),
-	);
-
-	if (server) {
-		server.close(() => {
-			process.exit(1);
-		});
-	}
-
-	process.exit(1);
-});
-
-process.on('uncaughtException', () => {
-	console.error(
-		chalk.redBright(
-			`🚫 Uncaught Exception Detected!\n🛑 Server is Shutting Down...`,
-		),
-	);
-
-	process.exit(1);
-});

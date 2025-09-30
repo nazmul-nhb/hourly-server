@@ -1,6 +1,6 @@
-import catchAsync from '../../utilities/catchAsync';
-import sendResponse from '../../utilities/sendResponse';
-import { userServices } from './user.services';
+import catchAsync from '@/utilities/catchAsync';
+import sendResponse from '@/utilities/sendResponse';
+import { userServices } from '@/modules/user/user.services';
 
 const getAllUsers = catchAsync(async (_req, res) => {
 	const users = await userServices.getAllUsersFromDB();

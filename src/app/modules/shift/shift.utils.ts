@@ -1,13 +1,8 @@
-import {
-	chronos,
-	convertMinutesToTime,
-	getTotalMinutes,
-	isValidArray,
-} from 'nhb-toolbox';
+import { ErrorWithStatus } from '@/classes/ErrorWithStatus';
+import { chronos, convertMinutesToTime, getTotalMinutes, isValidArray } from 'nhb-toolbox';
 import type { ClockTime } from 'nhb-toolbox/date/types';
-import { ErrorWithStatus } from '../../classes/ErrorWithStatus';
-import { STATUS_CODES } from '../../constants';
-import type { ICreateShift, IShiftDoc } from './shift.types';
+import type { ICreateShift, IShiftDoc } from '@/modules/shift/shift.types';
+import { STATUS_CODES } from 'nhb-toolbox/constants';
 
 interface IComputedDurations {
 	break_hours: ICreateShift['break_hours'];
@@ -24,10 +19,9 @@ interface IComputedDurations {
  */
 export const computeShiftDurations = <T extends Partial<ICreateShift>>(
 	data: T,
-	previousData?: IShiftDoc,
+	previousData?: IShiftDoc
 ): IComputedDurations => {
-	const break_hours =
-		data?.break_hours ?? previousData?.break_hours ?? '00:00';
+	const break_hours = data?.break_hours ?? previousData?.break_hours ?? '00:00';
 	const break_mins = getTotalMinutes(break_hours);
 
 	const shift_mins =
@@ -39,15 +33,12 @@ export const computeShiftDurations = <T extends Partial<ICreateShift>>(
 			'Invalid Break-time',
 			'Break-time cannot be greater than or equal to the total shift duration!',
 			STATUS_CODES.BAD_REQUEST,
-			'shift.break_hours',
+			'shift.break_hours'
 		);
 	}
 
 	const working_mins = shift_mins - break_mins;
-	const working_hours = convertMinutesToTime(working_mins)?.padStart(
-		5,
-		'0',
-	) as ClockTime;
+	const working_hours = convertMinutesToTime(working_mins)?.padStart(5, '0') as ClockTime;
 
 	return { break_hours, break_mins, working_mins, working_hours };
 };
@@ -87,7 +78,7 @@ export const throwShiftError = <T extends IShiftDoc>(
 	incoming: string,
 	start_time: ClockTime,
 	end_time: ClockTime,
-	path: string,
+	path: string
 ) => {
 	const throwError = (base: string, start: string, end: string) => {
 		if (chronos(base).isBetween(start, end, '[]')) {
@@ -95,21 +86,15 @@ export const throwShiftError = <T extends IShiftDoc>(
 				'Conflict Error',
 				`Shift time '${getTime(base)}' overlaps with shift 'from ${getTime(start)} to ${getTime(end)}' on ${incoming}!`,
 				STATUS_CODES.CONFLICT,
-				path,
+				path
 			);
 		}
 	};
 
 	if (isValidArray(shifts)) {
 		for (const entry of shifts) {
-			const targetStart = createDateString(
-				entry.start_time,
-				entry.date.slice(0, 10),
-			);
-			const targetEnd = createDateString(
-				entry.end_time,
-				entry.date.slice(0, 10),
-			);
+			const targetStart = createDateString(entry.start_time, entry.date.slice(0, 10));
+			const targetEnd = createDateString(entry.end_time, entry.date.slice(0, 10));
 			const incomingStart = createDateString(start_time, incoming);
 			const incomingEnd = createDateString(end_time, incoming);
 

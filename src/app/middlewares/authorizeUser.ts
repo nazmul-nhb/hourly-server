@@ -1,10 +1,10 @@
-import configs from '../configs';
-import catchAsync from '../utilities/catchAsync';
-import { ErrorWithStatus } from '../classes/ErrorWithStatus';
-import { User } from '../modules/user/user.model';
-import { verifyToken } from '../utilities/authUtilities';
-import { STATUS_CODES } from '../constants';
-import type { TUserRole } from '../types';
+import { ErrorWithStatus } from '@/classes/ErrorWithStatus';
+import configs from '@/configs';
+import { User } from '@/modules/user/user.model';
+import type { TUserRole } from '@/types';
+import { verifyToken } from '@/utilities/authUtilities';
+import catchAsync from '@/utilities/catchAsync';
+import { STATUS_CODES } from 'nhb-toolbox/constants';
 
 /**
  * * Middleware to check if the user is authorized to access the route.
@@ -25,7 +25,7 @@ const authorizeUser = (...requiredRoles: TUserRole[]) => {
 				'Authorization Error',
 				"You're not authorized!",
 				STATUS_CODES.UNAUTHORIZED,
-				'auth',
+				'auth'
 			);
 		}
 

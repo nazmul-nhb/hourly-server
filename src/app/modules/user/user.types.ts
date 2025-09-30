@@ -1,5 +1,5 @@
+import type { TEmail, TUserRole } from '@/types';
 import type { Document, Model, Types } from 'mongoose';
-import type { TEmail, TUserRole } from '../../types';
 
 export interface IUser extends ILoginCredentials {
 	first_name: string;

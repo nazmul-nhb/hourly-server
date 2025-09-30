@@ -1,8 +1,8 @@
 import { Router } from 'express';
-import { authRoutes } from '../modules/auth/auth.routes';
-import { userRoutes } from '../modules/user/user.routes';
-import type { IRoute } from '../types/interfaces';
-import { shiftRoutes } from '../modules/shift/shift.routes';
+import { authRoutes } from '@/modules/auth/auth.routes';
+import { userRoutes } from '@/modules/user/user.routes';
+import type { IRoute } from '@/types/interfaces';
+import { shiftRoutes } from '@/modules/shift/shift.routes';
 
 const router = Router();
 

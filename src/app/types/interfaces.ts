@@ -1,6 +1,6 @@
 import type { Router } from 'express';
 import type { JwtPayload } from 'jsonwebtoken';
-import type { TEmail, TUserRole } from './index';
+import type { TEmail, TUserRole } from '@/types';
 
 export interface IDuplicateError {
 	errorResponse: {

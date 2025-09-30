@@ -1,56 +1,35 @@
-import { MongooseError } from 'mongoose';
-import type { CastError } from 'mongoose';
-import type {
-	IDuplicateError,
-	IParserError,
-	INestedError,
-} from '../types/interfaces';
+import type { IDuplicateError, IParserError } from '@/types/interfaces';
+import { MongooseError, type CastError } from 'mongoose';
+import { isObject } from 'nhb-toolbox';
+import type { StrictObject } from 'nhb-toolbox/object/types';
 
 /**
- * Type guard to check if an error is a MongoDB Duplicate Error.
+ * * Type guard to check if an error is a MongoDB Duplicate Error.
+ * @param error - An unknown error object.
  */
-export const isMongoDuplicateError = (
-	error: unknown,
-): error is IDuplicateError => {
-	return (
-		typeof error === 'object' &&
-		error !== null &&
-		'code' in error &&
-		(error as IDuplicateError).code === 11000
-	);
+export const isMongoDuplicateError = (error: unknown): error is IDuplicateError => {
+	return isObject(error) && 'code' in error && error.code === 11000;
 };
 
 /**
- * Type guard to check if an error is a Mongoose CastError.
+ * * Type guard to check if an error is a Mongoose CastError.
  *
  * @param error An unknown error object.
- * @returns True if the error is a Mongoose CastError, false otherwise.
  */
 export const isCastError = (error: unknown): error is CastError => {
 	// Check for direct CastError
-	if (
-		error &&
-		typeof error === 'object' &&
-		'name' in error &&
-		error.name === 'CastError'
-	) {
+	if (isObject(error) && 'name' in error && error.name === 'CastError') {
 		return true;
 	}
 
 	// Check if the error is a ValidationError containing CastError(s)
-	if (
-		error &&
-		typeof error === 'object' &&
-		'errors' in error &&
-		error instanceof MongooseError
-	) {
-		const errors = (error as INestedError).errors;
+	if (isObject(error) && 'errors' in error && error instanceof MongooseError) {
+		const errors = error.errors as StrictObject;
 		return Object.values(errors).some(
 			(nestedError) =>
-				typeof nestedError === 'object' &&
-				nestedError !== null &&
+				isObject(nestedError) &&
 				'name' in nestedError &&
-				nestedError.name === 'CastError',
+				nestedError.name === 'CastError'
 		);
 	}
 
@@ -58,15 +37,11 @@ export const isCastError = (error: unknown): error is CastError => {
 };
 
 /**
- * Type guard to check if an error is an Express Body Parser Error.
+ * * Type guard to check if an error is an Express Body Parser Error.
+ * @param error An unknown error object.
  */
 export const isParserError = (error: unknown): error is IParserError => {
-	return (
-		typeof error === 'object' &&
-		error !== null &&
-		'type' in error &&
-		error.type === 'entity.parse.failed'
-	);
+	return isObject(error) && 'type' in error && error.type === 'entity.parse.failed';
 };
 
 export const typeGuards = { isCastError, isMongoDuplicateError, isParserError };

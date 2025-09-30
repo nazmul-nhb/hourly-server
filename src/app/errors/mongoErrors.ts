@@ -1,10 +1,6 @@
+import type { IDuplicateError, IErrorResponse, IErrorSource } from '@/types/interfaces';
 import type { Error as MongoError } from 'mongoose';
-import { capitalizeString } from 'nhb-toolbox';
-import type {
-	IDuplicateError,
-	IErrorResponse,
-	IErrorSource,
-} from '../types/interfaces';
+import { capitalizeString, pluralizer } from 'nhb-toolbox';
 
 interface DuplicateInfo {
 	db: string | null;
@@ -18,9 +14,7 @@ interface DuplicateInfo {
  * @param message - The MongoDB duplicate key error message.
  * @returns An object with db, collection, and parsed duplicate fields
  */
-const extractMongoDuplicateInfo = (
-	message: string | undefined,
-): DuplicateInfo => {
+const extractMongoDuplicateInfo = (message: string | undefined): DuplicateInfo => {
 	if (typeof message !== 'string') {
 		return { db: null, collection: null, fields: {} };
 	}
@@ -40,9 +34,7 @@ const extractMongoDuplicateInfo = (
 			let value = match[2].trim();
 
 			// Parse ObjectId or strip quotes
-			const objectIdMatch = value.match(
-				/ObjectId\(["']?([a-f\d]{24})["']?\)/i,
-			);
+			const objectIdMatch = value.match(/ObjectId\(["']?([a-f\d]{24})["']?\)/i);
 			if (objectIdMatch) {
 				value = objectIdMatch[1];
 			} else {
@@ -63,18 +55,18 @@ const extractMongoDuplicateInfo = (
 /** * Processes Mongoose Validation Errors and returns a structured response. */
 export const handleValidationError = (
 	error: MongoError.ValidationError,
-	stack?: string,
+	stack?: string
 ): IErrorResponse => {
 	const errorSource: IErrorSource[] = Object.values(error.errors).map(
 		(err: MongoError.ValidatorError | MongoError.CastError) => ({
 			path: err.path,
 			message: err.message,
-		}),
+		})
 	);
 
 	return {
 		statusCode: 400,
-		name: 'Mongo Validation Error',
+		name: 'Validation Error',
 		errorSource,
 		stack,
 	};
@@ -83,7 +75,7 @@ export const handleValidationError = (
 /** * Processes Mongoose Cast Errors and returns a structured response. */
 export const handleCastError = (
 	error: MongoError.CastError,
-	stack?: string,
+	stack?: string
 ): IErrorResponse => {
 	return {
 		statusCode: 400,
@@ -99,29 +91,23 @@ export const handleCastError = (
 };
 
 /** * Processes Mongo Duplicate Errors and returns a structured response. */
-export const handleDuplicateError = (
-	error: IDuplicateError,
-	stack?: string,
-) => {
+export const handleDuplicateError = (error: IDuplicateError, stack?: string) => {
 	const key = error?.keyValue ? Object.keys(error.keyValue)[0] : undefined;
 
 	const { collection, fields } = extractMongoDuplicateInfo(
-		error?.errorResponse?.errmsg ?? error?.errorResponse?.message,
+		error?.errorResponse?.errmsg ?? error?.errorResponse?.message
 	);
 
 	// Prefer "date", fallback to first available key
-	const field =
-		fields.date ? 'date' : (Object.keys(fields)[0] ?? key ?? 'unknown');
+	const field = fields.date ? 'date' : (Object.keys(fields)[0] ?? key ?? 'unknown');
 	const value = fields[field] ?? error?.keyValue?.[field] ?? 'duplicate';
 
 	const docName =
-		collection ?
-			capitalizeString(collection).replace(/s(?=[^s]*$)/, '')
-		:	'Document';
+		collection ? pluralizer.toSingular(capitalizeString(collection?.trim())) : 'Document';
 
 	return {
 		statusCode: 409,
-		name: 'MongoDB Duplicate Error',
+		name: 'Duplicate Error',
 		errorSource: [
 			{
 				path: field,

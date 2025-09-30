@@ -1,19 +1,10 @@
-import { ErrorWithStatus } from '../../classes/ErrorWithStatus';
-import configs from '../../configs';
-import { STATUS_CODES } from '../../constants';
-import type { DecodedUser } from '../../types/interfaces';
-import {
-	comparePassword,
-	generateToken,
-	verifyToken,
-} from '../../utilities/authUtilities';
-import { User } from '../user/user.model';
-import type {
-	ILoginCredentials,
-	IPlainUser,
-	ITokens,
-	IUser,
-} from '../user/user.types';
+import { ErrorWithStatus } from '@/classes/ErrorWithStatus';
+import configs from '@/configs';
+import type { DecodedUser } from '@/types/interfaces';
+import { comparePassword, generateToken, verifyToken } from '@/utilities/authUtilities';
+import { User } from '@/modules/user/user.model';
+import type { ILoginCredentials, IPlainUser, ITokens, IUser } from '@/modules/user/user.types';
+import { STATUS_CODES } from 'nhb-toolbox/constants';
 
 /**
  * Create a new user in MongoDB `user` collection.
@@ -40,17 +31,14 @@ const loginUser = async (payload: ILoginCredentials): Promise<ITokens> => {
 	const user = await User.validateUser(payload.email);
 
 	// * Check if password matches with the saved password in DB.
-	const passwordMatched = await comparePassword(
-		payload?.password,
-		user?.password,
-	);
+	const passwordMatched = await comparePassword(payload?.password, user?.password);
 
 	if (!passwordMatched) {
 		throw new ErrorWithStatus(
 			'Authorization Error',
 			`Invalid credentials!`,
 			STATUS_CODES.UNAUTHORIZED,
-			'auth',
+			'auth'
 		);
 	}
 
@@ -63,13 +51,13 @@ const loginUser = async (payload: ILoginCredentials): Promise<ITokens> => {
 	const accessToken = generateToken(
 		jwtPayload,
 		configs.accessSecret,
-		configs.accessExpireTime,
+		configs.accessExpireTime
 	);
 
 	const refreshToken = generateToken(
 		jwtPayload,
 		configs.refreshSecret,
-		configs.refreshExpireTime,
+		configs.refreshExpireTime
 	);
 
 	const { password: _, __v, ...userInfo } = user.toObject<IPlainUser>();
@@ -102,7 +90,7 @@ const refreshToken = async (token: string): Promise<{ token: string }> => {
 	const accessToken = generateToken(
 		jwtPayload,
 		configs.accessSecret,
-		configs.accessExpireTime,
+		configs.accessExpireTime
 	);
 
 	return { token: accessToken };

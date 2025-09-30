@@ -1,7 +1,7 @@
+import { ErrorWithStatus } from '@/classes/ErrorWithStatus';
 import { Schema, model } from 'mongoose';
-import type { IShiftDoc, IShiftModel } from './shift.types';
-import { ErrorWithStatus } from '../../classes/ErrorWithStatus';
-import { STATUS_CODES } from '../../constants';
+import type { IShiftDoc, IShiftModel } from '@/modules/shift/shift.types';
+import { STATUS_CODES } from 'nhb-toolbox/constants';
 
 const shiftSchema = new Schema<IShiftDoc>(
 	{
@@ -45,7 +45,7 @@ const shiftSchema = new Schema<IShiftDoc>(
 			updatedAt: 'updated_at',
 		},
 		versionKey: false,
-	},
+	}
 );
 
 // shiftSchema.index({ user: 1, date: 1 }, { unique: true });
@@ -69,7 +69,7 @@ shiftSchema.statics.findShiftById = async function (id: string) {
 			'Bad Request',
 			'Please provide a valid ID!',
 			STATUS_CODES.BAD_REQUEST,
-			'shift',
+			'shift'
 		);
 	}
 
@@ -80,7 +80,7 @@ shiftSchema.statics.findShiftById = async function (id: string) {
 			'Not Found Error',
 			`No shift found with ID ${id}!`,
 			STATUS_CODES.NOT_FOUND,
-			'shift',
+			'shift'
 		);
 	}
 

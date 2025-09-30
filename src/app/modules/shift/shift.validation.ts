@@ -6,7 +6,7 @@ const ClockTimeRegex = /^([01]\d|2[0-3]):[0-5]\d$/;
 const ClockTime = z
 	.string()
 	.trim()
-	.regex(ClockTimeRegex, { message: 'Invalid ClockTime format (HH:MM)' });
+	.regex(ClockTimeRegex, { error: 'Invalid ClockTime format (HH:MM)' });
 
 const BreakTime = z.union([
 	z.literal('08:00'),
@@ -14,7 +14,7 @@ const BreakTime = z.union([
 		.string()
 		.trim()
 		.regex(/^0[0-7]:[0-5]\d$/, {
-			message: 'Break-time cannot be more than 8 hours (08:00)',
+			error: 'Break-time cannot be more than 8 hours (08:00)',
 		}),
 ]);
 
@@ -22,14 +22,14 @@ const IsoZonedDate = z
 	.string()
 	.trim()
 	.regex(/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d{3}(Z|[+-]\d{2}:\d{2})$/, {
-		message: 'Invalid ISO date format with timezone!',
+		error: 'Invalid ISO date format with timezone!',
 	});
 
 const Weekends = z
 	.array(z.enum(WEEK_DAYS))
-	.max(6, { message: 'Weekends cannot be more than 6 days!' })
+	.max(6, { error: 'Weekends cannot be more than 6 days!' })
 	.refine((days) => new Set(days).size === days.length, {
-		message: 'Weekends must be unique!',
+		error: 'Weekends must be unique!',
 	});
 
 const creationSchema = z

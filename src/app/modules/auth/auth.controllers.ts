@@ -1,7 +1,7 @@
-import configs from '../../configs';
-import catchAsync from '../../utilities/catchAsync';
-import sendResponse from '../../utilities/sendResponse';
-import { authServices } from './auth.services';
+import configs from '@/configs';
+import catchAsync from '@/utilities/catchAsync';
+import sendResponse from '@/utilities/sendResponse';
+import { authServices } from '@/modules/auth/auth.services';
 
 /** * Register a new user */
 const registerUser = catchAsync(async (req, res) => {
@@ -21,13 +21,7 @@ const loginUser = catchAsync(async (req, res) => {
 		httpOnly: true,
 	});
 
-	sendResponse(
-		res,
-		'User',
-		'OK',
-		{ user, token: access_token },
-		'Login successful!',
-	);
+	sendResponse(res, 'User', 'OK', { user, token: access_token }, 'Login successful!');
 });
 
 /** * Generate new access token. */
@@ -36,13 +30,7 @@ const refreshToken = catchAsync(async (req, res) => {
 
 	const token = await authServices.refreshToken(refresh_token);
 
-	sendResponse(
-		res,
-		'N/A',
-		'OK',
-		token,
-		'Successfully retrieved new access token!',
-	);
+	sendResponse(res, 'N/A', 'OK', token, 'Successfully retrieved new access token!');
 });
 
 /** * Get current logged in user. */

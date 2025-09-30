@@ -1,31 +1,25 @@
+import { ErrorWithStatus } from '@/classes/ErrorWithStatus';
+import { QueryBuilder } from '@/classes/QueryBuilder';
+import type { TEmail } from '@/types';
 import { startSession } from 'mongoose';
-import {
-	chronos,
-	convertMinutesToTime,
-	pickFields,
-	sanitizeData,
-} from 'nhb-toolbox';
+import { chronos, convertMinutesToTime, pickFields, sanitizeData } from 'nhb-toolbox';
 import type { Enumerate } from 'nhb-toolbox/number/types';
-import { ErrorWithStatus } from '../../classes/ErrorWithStatus';
-import { QueryBuilder } from '../../classes/QueryBuilder';
-import { STATUS_CODES } from '../../constants';
-import type { TEmail } from '../../types';
-import { User } from '../user/user.model';
-import { Shift } from './shift.model';
-import type { ICreateBulkShift, ICreateShift } from './shift.types';
-import { computeShiftDurations, throwShiftError } from './shift.utils';
+import { User } from '@/modules/user/user.model';
+import { Shift } from '@/modules/shift/shift.model';
+import type { ICreateBulkShift, ICreateShift } from '@/modules/shift/shift.types';
+import { computeShiftDurations, throwShiftError } from '@/modules/shift/shift.utils';
+import { STATUS_CODES } from 'nhb-toolbox/constants';
 
 const createShiftInDB = async (
 	payload: ICreateShift | ICreateBulkShift,
-	email: TEmail | undefined,
+	email: TEmail | undefined
 ) => {
 	const user = await User.validateUser(email);
 
 	payload.user = user._id;
 
 	const computed = { ...payload, ...computeShiftDurations(payload) };
-	const isBulk =
-		'date_range' in computed && Array.isArray(computed.date_range);
+	const isBulk = 'date_range' in computed && Array.isArray(computed.date_range);
 
 	const dates =
 		isBulk ?
@@ -50,14 +44,14 @@ const createShiftInDB = async (
 						date: { $regex: incoming, $options: 'i' },
 					},
 					null,
-					{ session },
+					{ session }
 				);
 				throwShiftError(
 					others,
 					incoming,
 					computed.start_time,
 					computed.end_time,
-					'create_shift',
+					'create_shift'
 				);
 			}
 
@@ -93,7 +87,7 @@ const createShiftInDB = async (
 
 const getUserShiftsFromDB = async (
 	email: TEmail | undefined,
-	query?: Record<string, unknown>,
+	query?: Record<string, unknown>
 ) => {
 	const user = await User.validateUser(email);
 
@@ -107,15 +101,13 @@ const getUserShiftsFromDB = async (
 		if (monthIndex >= 1 && monthIndex <= 12) {
 			selectedMonth = chronos(year, monthIndex);
 
-			monthName = selectedMonth.monthName(
-				(monthIndex - 1) as Enumerate<12>,
-			);
+			monthName = selectedMonth.monthName((monthIndex - 1) as Enumerate<12>);
 		} else {
 			throw new ErrorWithStatus(
 				'Invalid Month',
 				`Month must be between 1-12, you provided: “${monthIndex}”`,
 				STATUS_CODES.BAD_REQUEST,
-				'query.month',
+				'query.month'
 			);
 		}
 	}
@@ -130,29 +122,26 @@ const getUserShiftsFromDB = async (
 
 	const shiftQuery = new QueryBuilder(
 		Shift.find(filter),
-		query?.sort_by ? query : { ...query, sort_by: 'date' },
+		query?.sort_by ? query : { ...query, sort_by: 'date' }
 	)
 		.filter()
 		.sort();
 
-	const total_shifts = await Shift.countDocuments(
-		shiftQuery.modelQuery.getFilter(),
-	);
+	const total_shifts = await Shift.countDocuments(shiftQuery.modelQuery.getFilter());
 
-	const [{ total_working_mins = 0, total_break_mins = 0 } = {}] =
-		await Shift.aggregate<{
-			total_working_mins: number;
-			total_break_mins: number;
-		}>([
-			{ $match: shiftQuery.modelQuery.getFilter() },
-			{
-				$group: {
-					_id: null,
-					total_working_mins: { $sum: '$working_mins' },
-					total_break_mins: { $sum: '$break_mins' },
-				},
+	const [{ total_working_mins = 0, total_break_mins = 0 } = {}] = await Shift.aggregate<{
+		total_working_mins: number;
+		total_break_mins: number;
+	}>([
+		{ $match: shiftQuery.modelQuery.getFilter() },
+		{
+			$group: {
+				_id: null,
+				total_working_mins: { $sum: '$working_mins' },
+				total_break_mins: { $sum: '$break_mins' },
 			},
-		]);
+		},
+	]);
 
 	const user_shifts = await shiftQuery.modelQuery;
 
@@ -179,7 +168,7 @@ const getAllShiftsFromDB = async (query?: Record<string, unknown>) => {
 const updateShiftInDB = async (
 	id: string,
 	payload: Partial<ICreateShift>,
-	email: TEmail | undefined,
+	email: TEmail | undefined
 ) => {
 	const existingShift = await Shift.findShiftById(id);
 
@@ -190,7 +179,7 @@ const updateShiftInDB = async (
 			'Authorization Error',
 			'You do not own this shift!',
 			STATUS_CODES.UNAUTHORIZED,
-			'update_shift',
+			'update_shift'
 		);
 	}
 
@@ -214,7 +203,7 @@ const updateShiftInDB = async (
 		incoming,
 		computed.start_time ?? existingShift?.start_time,
 		computed.end_time ?? existingShift?.end_time,
-		'update_shift',
+		'update_shift'
 	);
 
 	const updatedShift = await Shift.findOneAndUpdate({ _id: id }, computed, {
@@ -235,7 +224,7 @@ const deleteShiftFromDB = async (id: string, email: TEmail | undefined) => {
 			'Authorization Error',
 			'You do not own this shift!',
 			STATUS_CODES.UNAUTHORIZED,
-			'delete_shift',
+			'delete_shift'
 		);
 	}
 
@@ -246,7 +235,7 @@ const deleteShiftFromDB = async (id: string, email: TEmail | undefined) => {
 			'Not Found Error',
 			`No shift found with ID ${id}!`,
 			STATUS_CODES.NOT_FOUND,
-			'delete_shift',
+			'delete_shift'
 		);
 	}
 };

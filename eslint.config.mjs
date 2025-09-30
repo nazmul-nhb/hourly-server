@@ -1,3 +1,5 @@
+// @ts-check
+
 import jsConfig from '@eslint/js';
 import tsEslintPlugin from '@typescript-eslint/eslint-plugin';
 import tsParser from '@typescript-eslint/parser';
@@ -26,7 +28,6 @@ export default [
 	...tseslint.configs.recommended,
 	{
 		plugins: {
-			'@typescript-eslint': tsEslintPlugin,
 			prettier,
 		},
 		rules: {
@@ -71,10 +72,11 @@ export default [
 	},
 	{
 		files: [
+			'src/app/types/**/*.ts',
 			'src/app/modules/**/*.types.ts',
 			'src/app/modules/**/*.interfaces.ts',
 		],
-		rules: { 'no-unused-vars': 'off' },
+		rules: { 'no-unused-vars': 'off', 'no-undef': 'off' },
 	},
 	{
 		files: ['**/*.ts', '**/*.tsx', '**/*.js', '**/*.jsx'],

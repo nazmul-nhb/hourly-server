@@ -1,15 +1,16 @@
+import configs from '@/configs';
 import type { RequestHandler } from 'express';
-import { chronos } from 'nhb-toolbox';
-import configs from '../configs';
-import chalk from 'chalk';
+import { Chronos, roundNumber } from 'nhb-toolbox';
+import { Stylog } from 'nhb-toolbox/stylog';
 
 /** * Logs incoming HTTP requests in a structured and readable format. */
 export const requestLogger: RequestHandler = (req, res, next): void => {
-	const now = chronos();
+	const now = new Chronos();
+
 	const time =
 		configs.NODE_ENV === 'development' ?
-			now.format('mmm DD, YYYY HH:mm:ss:mss [Local]')
-		:	now.formatUTC('mmm DD, YYYY HH:mm:ss:mss [GMT]');
+			now.format(`ddd, mmm DD, YYYY HH:mm:ss:mss [${now.getTimeZoneName()}]`)
+		:	now.formatUTC('ddd, mmm DD, YYYY HH:mm:ss:mss [GMT]');
 
 	const method = req.method;
 	const url = req.originalUrl;
@@ -19,23 +20,25 @@ export const requestLogger: RequestHandler = (req, res, next): void => {
 
 	res.on('finish', () => {
 		const end = process.hrtime.bigint();
-		const durationMs = Number(end - start) / 1_000_000;
+		const durationMs = roundNumber(Number(end - start) / 1_000_000);
 
 		const durationColor =
-			durationMs > 1000 ? chalk.red
-			: durationMs > 500 ? chalk.yellow
-			: chalk.green;
+			durationMs > 1000 ? Stylog.error
+			: durationMs > 500 ? Stylog.yellow
+			: Stylog.teal;
 
 		const statusColor =
-			res.statusCode >= 500 ? chalk.bgYellow
-			: res.statusCode >= 400 ? chalk.bgRed
-			: res.statusCode >= 300 ? chalk.bgCyan
-			: chalk.bgGreen;
+			res.statusCode >= 500 ? Stylog.bgYellow.whitesmoke
+			: res.statusCode >= 400 ? Stylog.bgError.whitesmoke
+			: res.statusCode >= 300 ? Stylog.bgCyan.whitesmoke
+			: Stylog.bgTeal.whitesmoke;
 
 		console.info(
-			`[${chalk.yellow(time)}] ${chalk.cyan.bold(method)} ${chalk.cyan(url)} `.concat(
-				`→ ${statusColor.bold(res.statusCode ?? 500)} - IP: ${chalk.gray(ip)} → ${durationColor(durationMs.toFixed(2) + 'ms')}`,
-			),
+			`🕒 ${Stylog.yellow.toANSI(time)}\n` +
+				`📡 ${Stylog.cyan.bold.toANSI(method)} ${Stylog.cyan.toANSI(url)} → ` +
+				`${statusColor.bold.toANSI(` ${Stylog.white.toANSI(res.statusCode ?? 500)} `)} ` +
+				`🌍 IP: ${Stylog.gray.toANSI(ip)} → ` +
+				`⏱️ ${durationColor.toANSI(durationMs + 'ms')}`
 		);
 	});
 

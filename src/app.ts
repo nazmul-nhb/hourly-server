@@ -1,20 +1,22 @@
+import { corsOptions } from '@/configs/cors';
+import { catchAllErrors, handleRouteNotFound } from '@/middlewares/errorHandlers';
+import { requestLogger } from '@/middlewares/requestLogger';
+import router from '@/routes';
+import sendResponse from '@/utilities/sendResponse';
 import cookieParser from 'cookie-parser';
 import cors from 'cors';
-import type { Application } from 'express';
 import express from 'express';
-import { corsOptions } from './app/configs/cors';
-import {
-	catchAllErrors,
-	handleRouteNotFound,
-} from './app/middlewares/errorHandlers';
-import { requestLogger } from './app/middlewares/requestLogger';
-import router from './app/routes';
-import sendResponse from './app/utilities/sendResponse';
+import path from 'path';
+import serveFavicon from 'serve-favicon';
 
 // * Create an Express App
-const app: Application = express();
+const app = express();
 
-app.set('trust proxy', true);
+// ! Serve static files from the 'public' directory
+app.use(express.static(path.join(__dirname, 'public')));
+
+// * Show favicon in Client application(s) if it supports it
+app.use(serveFavicon(path.join(__dirname, 'public', 'favicon.png')));
 
 // * Respect CORS Policy
 app.use(cors(corsOptions));

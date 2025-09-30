@@ -1,11 +1,11 @@
+import { ErrorWithStatus } from '@/classes/ErrorWithStatus';
+import { typeGuards } from '@/errors/errorGuards';
+import { genericErrors } from '@/errors/genericErrors';
+import { mongoErrors } from '@/errors/mongoErrors';
+import { handleZodErrors } from '@/errors/zodErrors';
+import type { IErrorResponse } from '@/types/interfaces';
 import { Error as MongoError } from 'mongoose';
 import { ZodError } from 'zod';
-import { ErrorWithStatus } from '../classes/ErrorWithStatus';
-import type { IErrorResponse } from '../types/interfaces';
-import { typeGuards } from './errorGuards';
-import { genericErrors } from './genericErrors';
-import { mongoErrors } from './mongoErrors';
-import { handleZodErrors } from './zodErrors';
 
 /**
  * * Processes an error of `unknown` type and returns a structured response.
@@ -48,9 +48,7 @@ const processErrors = (error: unknown): IErrorResponse => {
 	return {
 		statusCode: 500,
 		name: 'Unknown Error!',
-		errorSource: [
-			{ path: 'unknown', message: 'An Unknown Error Occurred!' },
-		],
+		errorSource: [{ path: 'unknown', message: 'An Unknown Error Occurred!' }],
 		stack,
 	};
 };

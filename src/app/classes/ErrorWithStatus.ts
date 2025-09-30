@@ -1,4 +1,4 @@
-import type { TStatusCode } from '../types';
+import type { TStatusCode } from '@/types';
 
 /**
  * @class Create an instance of `Error` with custom properties
@@ -12,7 +12,7 @@ export class ErrorWithStatus extends Error {
 		public name: string,
 		public message: string,
 		public status: TStatusCode,
-		public path: string = '',
+		public path: string = ''
 	) {
 		super(message);
 		this.name = name;

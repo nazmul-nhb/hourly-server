@@ -11,7 +11,11 @@
 		"useUnknownInCatchVariables": true,
 		// "noUnusedLocals": true,
 		"noUnusedParameters": true,
-		"skipLibCheck": true
+		"skipLibCheck": true,
+		"baseUrl": ".",
+		"paths": {
+			"@/*": ["src/app/*"]
+		}
 	},
 	"include": ["src/**/*.ts", "src/**/*.d.ts"],
 	"exclude": ["node_modules"]
